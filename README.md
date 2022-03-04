@@ -86,6 +86,7 @@ https://www.youtube.com/watch?v=41leCIAzSd0&t=0s
 
 ### Point 2
 #### F# и декомпиляция в C#:
+Код на F#:
 ```fs
 let multi x y = x * y
 let plus x y = x + y
@@ -117,4 +118,467 @@ namespace CSharpTesting
 }
 ```
 Для вызова F# методов в C# требуется только вызвать их с global(и то, насколько я знаю, у некоторых работало и без него). Чтобы декомпилировать в C# я использовал dotPeek.
-При декомпиляции в C# Discriminated Union превращается в абстрактный класс, и из-за этого код значительно раздувается. Сам код декомпиляции лежит
+При декомпиляции в C# Discriminated Union превращается в абстрактный класс, и из-за этого код значительно раздувается. Сам код декомпиляции лежит в [a relative link]SharpDecompiler.md
+#### Scala и декомпиляция в Java:
+Код на Scala:
+```scala
+import scala.util.chaining.scalaUtilChainingOps
+
+class ScalaTrial {
+  def multi(x : Int, y : Int): Int = x * y
+  def plus(x : Int, y : Int): Int = x + y
+
+  def pipe() : Int = {
+    val x = 2.pipe(plus(_, 3)).pipe(multi(_, 2))
+    x
+  }
+}
+```
+Что касается Scala, то, насколько я понял, там нет ни Discriminated Union, ни Computation Expressions, поэтому я написал максимально простой код с использованием .pipe(). Вызов кода в Java:
+```java
+public class JavaTesting {
+    public static void main(String[] args) {
+        ScalaTrial myObj = new ScalaTrial();
+        int x = myObj.pipe();
+        System.out.println(x);
+    }
+}
+```
+Как видно, ничего не мешает просто вызвать Scala метод в Java. Декомпилировал я с помощью View->Show Bytecode в IntelliJ. Код декомпиляции лежит в [a relative link]JavaDecompiler.md, и по факту декомпилятор просто подключил модуль Scala и использовал .pipe().
+### Point 3
+#### Работа с C#
+DFS и BFS:
+```cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace CSharpGraphFs
+{
+    public class Graph
+    {
+        private int _V;
+    
+        private LinkedList<int>[] _adj;
+        public Graph(int V)
+        {
+            _adj = new LinkedList<int>[V];
+            for(var i = 0; i < _adj.Length; i++)
+            {
+                _adj[i] = new LinkedList<int>();
+            }
+            _V = V;
+        }
+         
+    
+        public void AddEdge(int v, int w)
+        {        
+            _adj[v].AddLast(w);
+         
+        }
+        
+        public void DFSUtil(int v, bool[] visited)
+        {
+            visited[v] = true;
+            Console.Write(v + " ");
+            var vList = _adj[v];
+            foreach (var n in vList.Where(n => !visited[n]))
+            {
+                DFSUtil(n, visited);
+            }
+        }
+ 
+        public void DFS(int v)
+        {
+            var visited = new bool[_V];
+            DFSUtil(v, visited);
+        }
+        
+        public void BFS(int s)
+        {
+            
+            var visited = new bool[_V];
+            for(var i = 0; i < _V; i++)
+                visited[i] = false;
+   
+            var queue = new LinkedList<int>();
+            visited[s] = true;
+            queue.AddLast(s);        
+         
+            while(queue.Any())
+            {
+                s = queue.First();
+                Console.Write(s + " " );
+                queue.RemoveFirst();
+                var list = _adj[s];
+         
+                foreach (var val in list.Where(val => !visited[val]))
+                {
+                    visited[val] = true;
+                    queue.AddLast(val);
+                }
+            }
+        }
+    }
+}
+```
+Собрать пакет можно с помощью NuGet. Для этого надо нажать пкм по проекту, выбрать Advanced Build Actions -> Pack Selected Project. После этого зайти в NuGet, нажать на sources, а затем New feed, а путь указать до Debug нашего проекта. Все готово, можно использовать пакет в другом проекте, добавив в начале using:
+```cs
+using CSharpGraphFs;
+
+namespace PackageUsing
+{
+    internal static class Program
+    {
+        private static void Main()
+        {
+            Graph graph = new Graph(6);
+            graph.AddEdge(0, 1);
+            graph.AddEdge(0, 2);
+            graph.AddEdge(1, 0);
+            graph.AddEdge(1, 3);
+            graph.AddEdge(2, 0);
+            graph.AddEdge(2, 3);
+            graph.AddEdge(3, 4);
+            graph.AddEdge(3, 5);
+            graph.AddEdge(4, 3);
+            graph.AddEdge(5, 3);
+
+            graph.DFS(0);
+            Console.WriteLine('\n');
+            graph.BFS(0);
+        }
+    }
+}
+```
+Для себя могу отметить сложность, которая у меня возникала: если обходы графа были изначально не совсем правильно написаны, а мы уже запаковали, то я не нашёл другого способа, кроме как пересоздать проект и запаковать заново.
+#### Работа с Java
+DFS и BFS:
+```java
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Stack;
+
+public class JavaGraph {
+    int V;
+
+    LinkedList<Integer>[] adj;
+
+    JavaGraph(int V)
+    {
+        this.V = V;
+        adj = new LinkedList[V];
+        for (int i = 0; i < adj.length; i++)
+            adj[i] = new LinkedList<Integer>();
+    }
+
+    void addEdge(int v, int w)
+    {
+        adj[v].add(w);
+    }
+
+    void DFS(int n)
+    {
+        boolean[] nodes = new boolean[V];
+        Stack<Integer> stack = new Stack<>();
+        stack.push(n);
+        int a = 0;
+        while(!stack.empty())
+        {
+            n = stack.peek();
+            stack.pop();
+            if(!nodes[n])
+            {
+                System.out.print(n + " ");
+                nodes[n] = true;
+            }
+            for (int i = 0; i < adj[n].size(); i++)
+            {
+                a = adj[n].get(i);
+                if (!nodes[a])
+                {
+                    stack.push(a);
+                }
+            }
+        }
+    }
+
+    void BFS(int n)
+    {
+        boolean visited[] = new boolean[V];
+        LinkedList<Integer> queue = new LinkedList<Integer>();
+        visited[n]=true;
+        queue.add(n);
+
+        while (queue.size() != 0)
+        {
+            n = queue.poll();
+            System.out.print(n + " ");
+            Iterator<Integer> i = adj[n].listIterator();
+            while (i.hasNext())
+            {
+                int next = i.next();
+                if (!visited[next])
+                {
+                    visited[next] = true;
+                    queue.add(next);
+                }
+            }
+        }
+    }
+}
+```
+С Java все немного сложнее. Лично я использовал Framework поддержку Maven и Groovy. Сначала с помощью Maven пакетируем проект, а потом нажимаем пкм по проекту -> Open Module Settings и добавляем в Libraries .jar файл, который создался, когда мы пакетировали проект (лежит в target). Все, пакет создался, можем его использовать:
+```java
+public class MyOwnMavenPackageTesting {
+    public static void main(String[] args) {
+        JavaGraph graph = new JavaGraph(6);
+        graph.addEdge(0, 1);
+        graph.addEdge(0, 2);
+        graph.addEdge(1, 0);
+        graph.addEdge(1, 3);
+        graph.addEdge(2, 0);
+        graph.addEdge(2, 3);
+        graph.addEdge(3, 4);
+        graph.addEdge(3, 5);
+        graph.addEdge(4, 3);
+        graph.addEdge(5, 3);
+
+        graph.DFS(0);
+        System.out.println('\n');
+        graph.BFS(0);
+    }
+}
+```
+При использовании пакета ничего добавлять не нужно, пакет используется автоматически.
+### Point 4
+Я выбрал Gnome sort, Bubble sort и встроенную сортировку для анализа их работы с помощью Benchmark.
+#### Работа с C#
+Алгоритмы сортировок:
+```cs
+using System;
+using BenchmarkDotNet.Attributes;
+
+namespace Benchmarks
+{
+    [MemoryDiagnoser]
+    public class Sorting
+    {
+        private const int Size = 10000;
+        
+        private readonly int[] _arr;
+        
+        public Sorting()
+        {
+            _arr = new int[Size];
+            for (var i = 0; i < Size; i++)
+            {
+                _arr[i] = new Random().Next();
+            }
+        }
+        
+        [Benchmark]
+        public int[] BubbleSort()
+        {
+            int temp;
+            var arr = _arr.ToArray();
+            for (var i = 0; i < arr.Length; i++)
+            {
+                for (var j = i + 1; j < arr.Length; j++)
+                {
+                    if (arr[i] <= arr[j]) continue;
+                    temp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = temp;
+                }            
+            }
+
+            return arr;
+        }
+        private void Swap(ref int item1, ref int item2)
+        {
+            (item1, item2) = (item2, item1);
+        }
+        
+        [Benchmark]
+        public int[] GnomeSort()
+        {
+            var index = 1;
+            var nextIndex = index + 1;
+            var arr = _arr.ToArray();
+            while (index < arr.Length)
+            {
+                if (arr[index - 1] < arr[index])
+                {
+                    index = nextIndex;
+                    nextIndex++;
+                }
+                else
+                {
+                    Swap(ref arr[index - 1], ref arr[index]);
+                    index--;
+                    if (index != 0) continue;
+                    index = nextIndex;
+                    nextIndex++;
+                }
+            }
+
+            return arr;
+        }
+
+        [Benchmark]
+        public int[] BuiltInSort()
+        {
+            var arr = _arr.ToArray();
+            Array.Sort(arr);
+            return arr;
+        }
+
+    }
+}
+```
+Нам нужно установить BenchmarkDotNet NuGet пакет. Затем для анализа аллокации памяти добавить атрибут "MemoryDiagnoser" перед объявлением класса, а для анализа времени выполнения добавить атрибут "Benchmark" до каждого определения функции. Код выполнения Benchmark:
+```cs
+using BenchmarkDotNet.Reports;
+using BenchmarkDotNet.Running;
+
+namespace Benchmarks
+{
+    internal static class Program
+    {
+        private static void Main()
+        {
+            var summary = BenchmarkRunner.Run<Sorting>();
+        }
+    }
+}
+```
+Результат выполнения:\
+![image](https://user-images.githubusercontent.com/79001610/156830279-ae95ce74-8fa2-45d8-b640-fde9382e8c60.png)\
+Как и ожидалось, bubble sort отработала медленней всех, а встроенная быстрее всех, при этом память выделяется почти одинаково во всех алгоритмах.
+#### Работа с Java
+Алгоритмы сортировок:
+```java
+package com.Benchmarks;
+
+import org.openjdk.jmh.annotations.*;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Benchmark)
+@Fork(value = 2, jvmArgs = {"-Xms2G", "-Xmx2G"})
+public class Sorting {
+
+    @Param({"10000"})
+    private int Size;
+
+    private int[] _arr;
+
+    public static void main(String[] args) throws Exception {
+        org.openjdk.jmh.Main.main(args);
+    }
+
+    public Sorting()
+    {
+        _arr = new int[Size];
+        for (var i = 0; i < Size; i++)
+        {
+            _arr[i] = (int) (Math.random() * 10000);
+        }
+    }
+
+    @org.openjdk.jmh.annotations.Benchmark
+    @Fork(value = 1, warmups = 1)
+    @Warmup(iterations = 2)
+    public int[] BubbleSort()
+    {
+        var arr = _arr;
+        for (int i = 0; i < arr.length - 1; i++) {
+            for (int j = 0; j < arr.length - i - 1; j++)
+                if (arr[j] > arr[j + 1]) {
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
+        }
+
+        return arr;
+    }
+
+    @org.openjdk.jmh.annotations.Benchmark
+    @Fork(value = 1, warmups = 1)
+    @Warmup(iterations = 2)
+    public int[] GnomeSort()
+    {
+        int index = 0;
+        var arr = _arr;
+        while (index < arr.length) {
+            if (index == 0)
+                index++;
+            if (arr[index] >= arr[index - 1])
+                index++;
+            else {
+                int temp = 0;
+                temp = arr[index];
+                arr[index] = arr[index - 1];
+                arr[index - 1] = temp;
+                index--;
+            }
+        }
+        return arr;
+    }
+
+    @org.openjdk.jmh.annotations.Benchmark
+    @Fork(value = 1, warmups = 1)
+    @Warmup(iterations = 2)
+    public int[] BuiltInSort()
+    {
+        var arr = _arr;
+        Arrays.sort(arr);
+        return arr;
+    }
+}
+```
+В Java JMH работает крайне сложно и неприятно. Для начала запустить Maven и открыть pom файл, туда добавить зависимостей:
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-core</artifactId>
+        <version>1.33</version>
+    </dependency>
+    <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-generator-annprocess</artifactId>
+        <version>1.33</version>
+    </dependency>
+</dependencies>
+```
+Затем в Maven обновить все проекты. Касаемо алгоритмов сортировок: лично я добавил
+```java
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Benchmark)
+@Fork(value = 2, jvmArgs = {"-Xms2G", "-Xmx2G"})
+```
+до объявления класса, а перед каждым алгоритмом добавлял вот это:
+```java
+@org.openjdk.jmh.annotations.Benchmark
+@Fork(value = 1, warmups = 1)
+@Warmup(iterations = 2)
+```
+Затем надо запустить JMH:
+```java
+public static void main(String[] args) throws Exception {
+        org.openjdk.jmh.Main.main(args);
+    }
+```
+Некоторые из атрибутов опциональны и нужны просто для большей информации.\
+Результат работы:\
+![image](https://user-images.githubusercontent.com/79001610/156833698-8e0fd4c4-24cb-4283-8190-6ee699d3ce75.png)\
+Очень странно получилось, но почему-то в Java получилось всё наоборот, скорость bubble sort самая большая, а встроенная самая медленная (по количеству операций в наносекунду).
+### Point 5
