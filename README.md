@@ -118,7 +118,7 @@ namespace CSharpTesting
 }
 ```
 Для вызова F# методов в C# требуется только вызвать их с global(и то, насколько я знаю, у некоторых работало и без него). Чтобы декомпилировать в C# я использовал dotPeek.
-При декомпиляции в C# Discriminated Union превращается в абстрактный класс, и из-за этого код значительно раздувается. Сам код декомпиляции лежит в [a relative link]SharpDecompiler.md
+При декомпиляции в C# Discriminated Union превращается в абстрактный класс, и из-за этого код значительно раздувается. Сам код декомпиляции лежит в [a relative link](SharpDecompiler.md)
 #### Scala и декомпиляция в Java:
 Код на Scala:
 ```scala
@@ -144,7 +144,7 @@ public class JavaTesting {
     }
 }
 ```
-Как видно, ничего не мешает просто вызвать Scala метод в Java. Декомпилировал я с помощью View->Show Bytecode в IntelliJ. Код декомпиляции лежит в [a relative link]JavaDecompiler.md, и по факту декомпилятор просто подключил модуль Scala и использовал .pipe().
+Как видно, ничего не мешает просто вызвать Scala метод в Java. Декомпилировал я с помощью View->Show Bytecode в IntelliJ. Код декомпиляции лежит в [link](./JavaDecompiler.md), и по факту декомпилятор просто подключил модуль Scala и использовал .pipe().
 ### Point 3
 #### Работа с C#
 DFS и BFS:
@@ -581,6 +581,7 @@ public static void main(String[] args) throws Exception {
 Результат работы:\
 ![image](https://user-images.githubusercontent.com/79001610/156833698-8e0fd4c4-24cb-4283-8190-6ee699d3ce75.png)\
 Очень странно получилось, но почему-то в Java получилось всё наоборот, скорость bubble sort самая большая, а встроенная самая медленная (по количеству операций в наносекунду).
+Источники: https://mkyong.com/java/java-jmh-benchmark-tutorial/
 ### Point 5
 Для анализа я использовал dotMemory.\
 С файловой системой:\
