@@ -62,10 +62,6 @@ else
 ### Метрики
 Соберём метрики и посмотрим, сколько памяти выделяется во время прогонки алгоритма на 1000 точках:
 
-![image](https://user-images.githubusercontent.com/79001610/169459577-ec43a87a-0881-42c0-a93a-651fa5a2dc3c.png)
-
-![image](https://user-images.githubusercontent.com/79001610/169459677-d2aa410e-18c0-47d2-8cdc-cf5c6337825f.png)
-
 ![image](https://user-images.githubusercontent.com/79001610/169488772-050087d0-cb1a-4b9c-895e-763832641ffa.png)
 
 ![image](https://user-images.githubusercontent.com/79001610/169488558-9acadd28-ce3b-467e-9c96-5a9cd645e3d8.png)
