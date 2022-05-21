@@ -97,3 +97,5 @@ public Brain(int size)
 ![image](https://user-images.githubusercontent.com/79001610/169626224-b39b9c78-f90b-42ea-aa2a-924c4a9fecf1.png)
 
 ![image](https://user-images.githubusercontent.com/79001610/169626218-87285e9e-0542-4608-9c94-130688a760a5.png)
+
+![image](https://user-images.githubusercontent.com/79001610/169626602-000e155f-219f-487d-b466-a7a38f2e5dcc.png)
